@@ -1,0 +1,21 @@
+[
+{
+  "modid": "ModLister",
+  "name": "Mod Lister",
+  "description": "The Mod Lister mod, it lists the mods you are using, because reporting bugs with mods is good.",
+  "version": "1.7.10-1.0",
+  "mcversion": "1.7.10",
+  "url": "http://nincodedo.com",
+  "updateUrl": "",
+  "authorList": [
+    "Nincodedo"
+  ],
+  "credits": "Nincodedo, Vazkii since this is mostly stolen from her Gist page, Pahimar for his Let's Mod Reboot series",
+  "logoFile": "",
+  "screenshots": [
+  ],
+  "parent":"",
+  "dependencies": [
+  ]
+}
+]
