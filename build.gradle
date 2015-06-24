@@ -15,15 +15,30 @@ buildscript {
     }
 }
 
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    // Load config.  It shall from now be referenced as simple config or poject.config
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
 apply plugin: 'forge'
 
-version = "1.7.10-1.0"
+version = config.mod_version
 group= "com.nincodedo.ninsmodlister" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "NinsModLister"
 
 minecraft {
-    version = "1.7.10-10.13.2.1277"
+    version = config.minecraft_version + "-" + config.forge_version
+    
+    replaceIn "reference/Reference.java"
+    replace "@MINECRAFT_VERSION@", "${config.minecraft_version}"
+    replace "@MOD_VERSION@", "${config.mod_version}.${System.getenv("BUILD_NUMBER") ?: 0}"
 }
+
+version = "${config.minecraft_version}-${config.mod_version}.${System.getenv("BUILD_NUMBER") ?: 0}"
 
 dependencies {
     // you may put jars on which you depend on in ./libs

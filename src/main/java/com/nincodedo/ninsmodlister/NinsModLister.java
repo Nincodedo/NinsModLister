@@ -12,6 +12,7 @@ import java.util.List;
 import net.minecraftforge.common.ForgeVersion;
 
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
+import com.nincodedo.ninsmodlister.reference.Reference;
 import com.nincodedo.ninsmodlister.utility.LogHelper;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -21,15 +22,10 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = NinsModLister.MOD_ID, name = NinsModLister.MOD_NAME, version = NinsModLister.VERSION, dependencies = NinsModLister.DEPENDENCIES)
+@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, dependencies = Reference.DEPENDENCIES)
 public final class NinsModLister {
 
-	public static final String MOD_ID = "NinsModLister";
-	public static final String MOD_NAME = "Nin's Mod Lister";
-	public static final String VERSION = "1.0";
-	public static final String DEPENDENCIES = "after:*";
-
-	@Mod.Instance(MOD_ID)
+	@Mod.Instance(Reference.MOD_ID)
 	public static NinsModLister instance;
 
 	File mcDir;
