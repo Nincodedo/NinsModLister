@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import net.minecraftforge.common.ForgeVersion;
@@ -32,6 +33,8 @@ public final class NinsModLister {
 
 	public static String[] blackList;
 
+	public static String[] categoryGroups;
+
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		mcDir = event.getModConfigurationDirectory().getParentFile();
@@ -41,11 +44,28 @@ public final class NinsModLister {
 
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
-		List<String> lines = new ArrayList();
 		List<ModContainer> mods = new ArrayList<ModContainer>();
+		List<String> lines = new ArrayList();
+
+
+
 		for (ModContainer mod : Loader.instance().getModList())
 			mods.add(mod);
 
+		HashMap<String, List<String>> customCategories = new HashMap<String, List<String>>();
+		List<String> modIds = new ArrayList<String>();
+		for (String line : categoryGroups) {
+			System.out.println(line);
+			String category = line.split(":")[0];
+			String modId = line.split(":")[1];
+			if(!customCategories.containsKey(category)){
+				modIds = new ArrayList<String>();
+				customCategories.put(category, modIds);
+			}
+			modIds.add(modId);
+		}
+
+		
 		Collections.sort(mods, new Comparator<ModContainer>() {
 			@Override
 			public int compare(ModContainer mod1, ModContainer mod2) {
@@ -56,9 +76,11 @@ public final class NinsModLister {
 
 		search: for (ModContainer mod : mods) {
 			for (String noPrint : blackList) {
-				if (mod.getName().contains(noPrint))
+				if (mod.getName().contains(noPrint)
+						|| mod.getModId().contains(noPrint))
 					continue search;
 			}
+
 			lines.add(createLine(mod));
 		}
 		try {

@@ -25,6 +25,14 @@ public class ConfigurationHandler {
 				"general", new String[] { "Forge Mod Loader",
 						"Minecraft Coder Pack", "Minecraft Forge" },
 				"List of strings that won't show up in the mod listing");
+		NinsModLister.categoryGroups = configuration
+				.getStringList(
+						"categoryGroups",
+						"general",
+						new String[] {},
+						"Use this to create custom categories for modIDs./n"
+								+ "For example, if you would like Nin's Mod Lister to show up in a Things category, your config would look like this"
+								+ "Things:NinsModLister");
 
 		if (configuration.hasChanged()) {
 			configuration.save();
