@@ -30,8 +30,8 @@ public class ConfigurationHandler {
 						"categoryGroups",
 						"general",
 						new String[] {},
-						"Use this to create custom categories for modIDs./n"
-								+ "For example, if you would like Nin's Mod Lister to show up in a Things category, your config would look like this"
+						"Use this to create custom categories for modIDs or names."
+								+ "For example, if you would like Nin's Mod Lister to show up in a Things category, your config would look like this "
 								+ "Things:NinsModLister");
 
 		if (configuration.hasChanged()) {
