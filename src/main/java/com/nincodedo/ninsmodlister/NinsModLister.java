@@ -7,7 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.minecraftforge.common.ForgeVersion;
 
@@ -32,6 +36,8 @@ public final class NinsModLister {
 
 	public static String[] blackList;
 
+	public static String[] categoryGroups;
+
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		mcDir = event.getModConfigurationDirectory().getParentFile();
@@ -41,26 +47,68 @@ public final class NinsModLister {
 
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
-		List<String> lines = new ArrayList();
 		List<ModContainer> mods = new ArrayList<ModContainer>();
-		for (ModContainer mod : Loader.instance().getModList())
-			mods.add(mod);
+		List<String> lines = new ArrayList();
+		boolean found = false;
+		HashMap<String, List<ModContainer>> customCategories = new HashMap<String, List<ModContainer>>();
+		List<ModContainer> modIds = new ArrayList<ModContainer>();
 
-		Collections.sort(mods, new Comparator<ModContainer>() {
+		for (ModContainer mod : Loader.instance().getModList()) {
+			found = false;
+			for (String line : categoryGroups) {
+				String category = line.split(":")[0];
+				String modId = line.split(":")[1];
+				if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
+					if (!customCategories.containsKey(category)) {
+						modIds = new ArrayList<ModContainer>();
+						customCategories.put(category, modIds);
+					}
+					if (customCategories.containsKey(category)){
+						modIds = customCategories.get(category);
+					}
+					modIds.add(mod);
+					found = true;
+				}
+			}
+			if (!found && !mods.contains(mod)) {
+				mods.add(mod);
+			}
+		}
+		
+		Comparator<ModContainer> compareMods = new Comparator<ModContainer>() {
 			@Override
 			public int compare(ModContainer mod1, ModContainer mod2) {
 				return mod1.getName().toLowerCase()
 						.compareTo(mod2.getName().toLowerCase());
 			}
-		});
+		};
+
+		Collections.sort(mods, compareMods);
+		
+		for(Entry<String, List<ModContainer>> entry : customCategories.entrySet()){
+			Collections.sort(entry.getValue(), compareMods);
+		}
 
 		search: for (ModContainer mod : mods) {
 			for (String noPrint : blackList) {
-				if (mod.getName().contains(noPrint))
+				if (mod.getName().contains(noPrint)
+						|| mod.getModId().contains(noPrint))
 					continue search;
 			}
+
 			lines.add(createLine(mod));
 		}
+		
+		lines.add("\r");
+		
+		for(Entry<String, List<ModContainer>> entry : customCategories.entrySet()){
+			lines.add("\r"+entry.getKey()+"\r=");
+			for(ModContainer mod : entry.getValue()){
+				lines.add(createLine(mod));
+			}
+			lines.add("\r");
+		}
+		
 		try {
 			File file = new File(mcDir, "Versions.md");
 			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
