@@ -20,6 +20,7 @@ import net.minecraftforge.common.ForgeVersion;
 
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
 import com.nincodedo.ninsmodlister.reference.Reference;
+import com.nincodedo.ninsmodlister.reference.Settings;
 import com.nincodedo.ninsmodlister.utility.LogHelper;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -37,12 +38,6 @@ public final class NinsModLister {
 
 	File mcDir;
 
-	public static String[] configBlackList;
-
-	public static String[] categoryGroups;
-
-	public static String generalCategoryTitle;
-	
 	List blackList;
 
 	@Mod.EventHandler
@@ -58,11 +53,11 @@ public final class NinsModLister {
 		boolean found = false;
 		HashMap<String, List<ModContainer>> customCategories = new HashMap<String, List<ModContainer>>();
 		List<ModContainer> modIds = new ArrayList<ModContainer>();
-		blackList = Arrays.asList(configBlackList);
+		blackList = Arrays.asList(Settings.configBlackList);
 
 		for (ModContainer mod : Loader.instance().getModList()) {
 			found = false;
-			for (String line : categoryGroups) {
+			for (String line : Settings.categoryGroups) {
 				String category = line.split(":")[0];
 				String modId = line.split(":")[1];
 				if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
@@ -80,11 +75,11 @@ public final class NinsModLister {
 				}
 			}
 			if (!found) {
-				if (!customCategories.containsKey(generalCategoryTitle)) {
+				if (!customCategories.containsKey(Settings.generalCategoryTitle)) {
 					modIds = new ArrayList<ModContainer>();
-					customCategories.put(generalCategoryTitle, modIds);
+					customCategories.put(Settings.generalCategoryTitle, modIds);
 				} else {
-					modIds = customCategories.get(generalCategoryTitle);
+					modIds = customCategories.get(Settings.generalCategoryTitle);
 				}
 				if (!blackList.contains(mod.getName())
 						&& !blackList.contains(mod.getModId()))

@@ -6,6 +6,7 @@ import net.minecraftforge.common.config.Configuration;
 
 import com.nincodedo.ninsmodlister.NinsModLister;
 import com.nincodedo.ninsmodlister.reference.Reference;
+import com.nincodedo.ninsmodlister.reference.Settings;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -21,11 +22,11 @@ public class ConfigurationHandler {
 	}
 
 	private static void loadConfiguration() {
-		NinsModLister.configBlackList = configuration.getStringList("blackList",
+		Settings.configBlackList = configuration.getStringList("blackList",
 				"general", new String[] { "Forge Mod Loader",
 						"Minecraft Coder Pack", "Minecraft Forge" },
 				"List of strings that won't show up in the mod listing");
-		NinsModLister.categoryGroups = configuration
+		Settings.categoryGroups = configuration
 				.getStringList(
 						"categoryGroups",
 						"general",
@@ -33,7 +34,7 @@ public class ConfigurationHandler {
 						"Use this to create custom categories for modIDs or names."
 								+ "For example, if you would like Nin's Mod Lister to show up in a Things category, your config would look like this "
 								+ "Things:NinsModLister");
-		NinsModLister.generalCategoryTitle = configuration.getString("generalCategoryTitle", "general", "Current Mod Versions", null);
+		Settings.generalCategoryTitle = configuration.getString("generalCategoryTitle", "general", "Current Mod Versions", null);
 
 		if (configuration.hasChanged()) {
 			configuration.save();
