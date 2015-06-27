@@ -2,8 +2,10 @@ package com.nincodedo.ninsmodlister;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,7 +65,7 @@ public final class NinsModLister {
 						modIds = new ArrayList<ModContainer>();
 						customCategories.put(category, modIds);
 					}
-					if (customCategories.containsKey(category)){
+					if (customCategories.containsKey(category)) {
 						modIds = customCategories.get(category);
 					}
 					modIds.add(mod);
@@ -74,7 +76,7 @@ public final class NinsModLister {
 				mods.add(mod);
 			}
 		}
-		
+
 		Comparator<ModContainer> compareMods = new Comparator<ModContainer>() {
 			@Override
 			public int compare(ModContainer mod1, ModContainer mod2) {
@@ -84,8 +86,9 @@ public final class NinsModLister {
 		};
 
 		Collections.sort(mods, compareMods);
-		
-		for(Entry<String, List<ModContainer>> entry : customCategories.entrySet()){
+
+		for (Entry<String, List<ModContainer>> entry : customCategories
+				.entrySet()) {
 			Collections.sort(entry.getValue(), compareMods);
 		}
 
@@ -98,26 +101,28 @@ public final class NinsModLister {
 
 			lines.add(createLine(mod));
 		}
-		
-		lines.add("\r");
-		
-		for(Entry<String, List<ModContainer>> entry : customCategories.entrySet()){
-			lines.add("\r"+entry.getKey()+"\r=");
-			for(ModContainer mod : entry.getValue()){
+
+		lines.add("\n");
+
+		for (Entry<String, List<ModContainer>> entry : customCategories
+				.entrySet()) {
+			lines.add("\n" + entry.getKey() + "\n=");
+			for (ModContainer mod : entry.getValue()) {
 				lines.add(createLine(mod));
 			}
-			lines.add("\r");
+			lines.add("\n");
 		}
-		
+
 		try {
 			File file = new File(mcDir, "Versions.md");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(file), "UTF-8"));
 
-			writer.write("Current Forge Version\r=\r");
+			writer.write("Current Forge Version\n=\n");
 
-			writer.write("- **Forge** v" + ForgeVersion.getVersion() + "\r\r");
+			writer.write("- **Forge** v" + ForgeVersion.getVersion() + "\n\n");
 
-			writer.write("Current Mod Versions\r=");
+			writer.write("Current Mod Versions\n=");
 
 			for (String s : lines)
 				writer.write(s);
@@ -136,7 +141,7 @@ public final class NinsModLister {
 
 	private String createLine(ModContainer container) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("\r");
+		builder.append("\n");
 		builder.append("- **");
 		builder.append(container.getName());
 		builder.append("** v");
