@@ -21,7 +21,7 @@ public class ConfigurationHandler {
 	}
 
 	private static void loadConfiguration() {
-		NinsModLister.blackList = configuration.getStringList("blackList",
+		NinsModLister.configBlackList = configuration.getStringList("blackList",
 				"general", new String[] { "Forge Mod Loader",
 						"Minecraft Coder Pack", "Minecraft Forge" },
 				"List of strings that won't show up in the mod listing");
@@ -33,6 +33,7 @@ public class ConfigurationHandler {
 						"Use this to create custom categories for modIDs or names."
 								+ "For example, if you would like Nin's Mod Lister to show up in a Things category, your config would look like this "
 								+ "Things:NinsModLister");
+		NinsModLister.generalCategoryTitle = configuration.getString("generalCategoryTitle", "general", "Current Mod Versions", null);
 
 		if (configuration.hasChanged()) {
 			configuration.save();
