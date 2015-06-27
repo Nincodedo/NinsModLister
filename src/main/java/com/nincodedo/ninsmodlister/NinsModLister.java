@@ -75,11 +75,13 @@ public final class NinsModLister {
 				}
 			}
 			if (!found) {
-				if (!customCategories.containsKey(Settings.generalCategoryTitle)) {
+				if (!customCategories
+						.containsKey(Settings.generalCategoryTitle)) {
 					modIds = new ArrayList<ModContainer>();
 					customCategories.put(Settings.generalCategoryTitle, modIds);
 				} else {
-					modIds = customCategories.get(Settings.generalCategoryTitle);
+					modIds = customCategories
+							.get(Settings.generalCategoryTitle);
 				}
 				if (!blackList.contains(mod.getName())
 						&& !blackList.contains(mod.getModId()))
@@ -112,7 +114,7 @@ public final class NinsModLister {
 		}
 
 		try {
-			File file = new File(mcDir, "Versions.md");
+			File file = new File(mcDir, Settings.fileName);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream(file), "UTF-8"));
 
@@ -140,18 +142,20 @@ public final class NinsModLister {
 				&& !blackList.contains(mod.getModId());
 	}
 
-	private String createLine(ModContainer container) {
+	private String createLine(ModContainer mod) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("\n");
 		builder.append("- **");
-		builder.append(container.getName());
-		builder.append("** v");
-		builder.append(container.getVersion());
+		builder.append(mod.getName());
+		builder.append("** ");
+		if (mod.getVersion().charAt(0) != 'v')
+			builder.append("v");
+		builder.append(mod.getVersion());
 
-		if (container.getMetadata().getAuthorList() != null
-				&& container.getMetadata().getAuthorList().length() > 0) {
+		if (mod.getMetadata().getAuthorList() != null
+				&& mod.getMetadata().getAuthorList().length() > 0) {
 			builder.append(" by ");
-			builder.append(container.getMetadata().getAuthorList());
+			builder.append(mod.getMetadata().getAuthorList());
 		}
 
 		return builder.toString();

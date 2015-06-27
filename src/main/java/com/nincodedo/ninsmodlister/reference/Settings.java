@@ -6,4 +6,6 @@ public class Settings {
 	public static String[] categoryGroups;
 
 	public static String generalCategoryTitle;
+
+	public static String fileName;
 }
