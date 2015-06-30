@@ -22,22 +22,27 @@ public class ConfigurationHandler {
 	}
 
 	private static void loadConfiguration() {
+		String category = "general";
+
 		Settings.configBlackList = configuration.getStringList("blackList",
-				"general", new String[] { "Forge Mod Loader",
+				category, new String[] { "Forge Mod Loader",
 						"Minecraft Coder Pack", "Minecraft Forge" },
 				"List of strings that won't show up in the mod listing");
 		Settings.categoryGroups = configuration
 				.getStringList(
 						"categoryGroups",
-						"general",
+						category,
 						new String[] {},
 						"Use this to create custom categories for modIDs or names."
 								+ "For example, if you would like Nin's Mod Lister to show up in a Things category, your config would look like this "
 								+ "Things:NinsModLister");
+		Settings.categoryPriority = configuration.getStringList("", category,
+				new String[] { "Current Mod Versions:1" }, "");
 		Settings.generalCategoryTitle = configuration
-				.getString("generalCategoryTitle", "general",
-						"Current Mod Versions", "Category name for any mods that don't fit a defined custom category");
-		Settings.fileName = configuration.getString("fileName", "general",
+				.getString("generalCategoryTitle", category,
+						"Current Mod Versions",
+						"Category name for any mods that don't fit a defined custom category");
+		Settings.fileName = configuration.getString("fileName", category,
 				"Versions.md", "Name of your mod list file");
 
 		if (configuration.hasChanged()) {
