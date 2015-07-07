@@ -2,16 +2,25 @@ package com.nincodedo.ninsmodlister;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.minecraftforge.common.ForgeVersion;
 
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
+import com.nincodedo.ninsmodlister.reference.Reference;
+import com.nincodedo.ninsmodlister.reference.Settings;
 import com.nincodedo.ninsmodlister.utility.LogHelper;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -21,20 +30,16 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(modid = NinsModLister.MOD_ID, name = NinsModLister.MOD_NAME, version = NinsModLister.VERSION, dependencies = NinsModLister.DEPENDENCIES)
+@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, dependencies = Reference.DEPENDENCIES)
 public final class NinsModLister {
 
-	public static final String MOD_ID = "NinsModLister";
-	public static final String MOD_NAME = "Nin's Mod Lister";
-	public static final String VERSION = "1.0";
-	public static final String DEPENDENCIES = "after:*";
-
-	@Mod.Instance(MOD_ID)
+	@Mod.Instance(Reference.MOD_ID)
 	public static NinsModLister instance;
 
 	File mcDir;
 
-	public static String[] blackList;
+	List<String> blackList;
+	List<String> priorityList;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -46,34 +51,80 @@ public final class NinsModLister {
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
 		List<String> lines = new ArrayList();
-		List<ModContainer> mods = new ArrayList<ModContainer>();
-		for (ModContainer mod : Loader.instance().getModList())
-			mods.add(mod);
+		boolean found = false;
+		HashMap<String, List<ModContainer>> customCategories = new HashMap<String, List<ModContainer>>();
+		List<ModContainer> modIds = new ArrayList<ModContainer>();
+		blackList = Arrays.asList(Settings.configBlackList);
+		priorityList = Arrays.asList(Settings.categoryPriority);
 
-		Collections.sort(mods, new Comparator<ModContainer>() {
+		for (ModContainer mod : Loader.instance().getModList()) {
+			found = false;
+			for (String line : Settings.categoryGroups) {
+				String category = line.split(":")[0];
+				String modId = line.split(":")[1];
+				if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
+					modIds = customCategories.get(category);
+					if (modIds == null) {
+						modIds = new ArrayList<ModContainer>();
+						customCategories.put(category, modIds);
+					}
+					if (checkBlackList(mod)) {
+						modIds.add(mod);
+					}
+					found = true;
+				}
+			}
+			if (!found) {
+				modIds = customCategories.get(Settings.generalCategoryTitle);
+				if (modIds == null) {
+					modIds = new ArrayList<ModContainer>();
+					customCategories.put(Settings.generalCategoryTitle, modIds);
+				}
+				if (checkBlackList(mod)) {
+					modIds.add(mod);
+				}
+			}
+		}
+
+		Comparator<ModContainer> compareMods = new Comparator<ModContainer>() {
 			@Override
 			public int compare(ModContainer mod1, ModContainer mod2) {
 				return mod1.getName().toLowerCase()
 						.compareTo(mod2.getName().toLowerCase());
 			}
-		});
+		};
 
-		search: for (ModContainer mod : mods) {
-			for (String noPrint : blackList) {
-				if (mod.getName().contains(noPrint))
-					continue search;
-			}
-			lines.add(createLine(mod));
+		for (Entry<String, List<ModContainer>> entry : customCategories
+				.entrySet()) {
+			Collections.sort(entry.getValue(), compareMods);
 		}
+
+		lines.add("\n");
+
+		int priorityId = 1;
+		for (String priorityString : priorityList) {
+			String priority = priorityString.split(":")[0];
+			int priorityNum = Integer.parseInt(priorityString.split(":")[1]);
+			if (priorityNum != priorityId) {
+				priorityId++;
+			}
+			List<ModContainer> entries = customCategories.get(priority);
+
+			lines.add("\n" + priority + "\n=");
+			for (ModContainer mod : entries) {
+				lines.add(createLine(mod));
+			}
+			lines.add("\n");
+		}
+
 		try {
-			File file = new File(mcDir, "Versions.md");
-			BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+			File file = new File(mcDir, Settings.fileName);
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(file), "UTF-8"));
 
-			writer.write("Current Forge Version\r=\r");
+			writer.write("Current Forge Version\n=\n");
 
-			writer.write("- **Forge** v" + ForgeVersion.getVersion() + "\r\r");
-
-			writer.write("Current Mod Versions\r=");
+			writer.write("- **Forge** v" + ForgeVersion.getVersion());
 
 			for (String s : lines)
 				writer.write(s);
@@ -90,18 +141,33 @@ public final class NinsModLister {
 		}
 	}
 
-	private String createLine(ModContainer container) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("\r");
-		builder.append("- **");
-		builder.append(container.getName());
-		builder.append("** v");
-		builder.append(container.getVersion());
+	private boolean checkBlackList(ModContainer mod) {
+		boolean check = true;
+		String modName = mod.getName();
+		String modId = mod.getModId();
+		for (String blackListItem : blackList) {
+			if (modName.contains(blackListItem)
+					|| modId.contains(blackListItem)) {
+				check = false;
+				break;
+			}
+		}
+		return check;
+	}
 
-		if (container.getMetadata().getAuthorList() != null
-				&& container.getMetadata().getAuthorList().length() > 0) {
+	private String createLine(ModContainer mod) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("\n");
+		builder.append("- **");
+		builder.append(mod.getName());
+		builder.append("** ");
+		builder.append("v");
+		builder.append(mod.getVersion());
+
+		if (mod.getMetadata().getAuthorList() != null
+				&& mod.getMetadata().getAuthorList().length() > 0) {
 			builder.append(" by ");
-			builder.append(container.getMetadata().getAuthorList());
+			builder.append(mod.getMetadata().getAuthorList());
 		}
 
 		return builder.toString();
