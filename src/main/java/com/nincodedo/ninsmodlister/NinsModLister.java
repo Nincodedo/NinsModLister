@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import scala.actors.threadpool.Arrays;
 import net.minecraftforge.common.ForgeVersion;
 
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
@@ -38,7 +38,8 @@ public final class NinsModLister {
 
 	File mcDir;
 
-	List blackList;
+	List<String> blackList;
+	List<String> priorityList;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -54,6 +55,7 @@ public final class NinsModLister {
 		HashMap<String, List<ModContainer>> customCategories = new HashMap<String, List<ModContainer>>();
 		List<ModContainer> modIds = new ArrayList<ModContainer>();
 		blackList = Arrays.asList(Settings.configBlackList);
+		priorityList = Arrays.asList(Settings.categoryPriority);
 
 		for (ModContainer mod : Loader.instance().getModList()) {
 			found = false;
@@ -61,12 +63,10 @@ public final class NinsModLister {
 				String category = line.split(":")[0];
 				String modId = line.split(":")[1];
 				if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
-					if (!customCategories.containsKey(category)) {
+					modIds = customCategories.get(category);
+					if (modIds == null) {
 						modIds = new ArrayList<ModContainer>();
 						customCategories.put(category, modIds);
-					}
-					if (customCategories.containsKey(category)) {
-						modIds = customCategories.get(category);
 					}
 					if (checkBlackList(mod)) {
 						modIds.add(mod);
@@ -75,17 +75,14 @@ public final class NinsModLister {
 				}
 			}
 			if (!found) {
-				if (!customCategories
-						.containsKey(Settings.generalCategoryTitle)) {
+				modIds = customCategories.get(Settings.generalCategoryTitle);
+				if (modIds == null) {
 					modIds = new ArrayList<ModContainer>();
 					customCategories.put(Settings.generalCategoryTitle, modIds);
-				} else {
-					modIds = customCategories
-							.get(Settings.generalCategoryTitle);
 				}
-				if (!blackList.contains(mod.getName())
-						&& !blackList.contains(mod.getModId()))
+				if (checkBlackList(mod)) {
 					modIds.add(mod);
+				}
 			}
 		}
 
@@ -104,10 +101,17 @@ public final class NinsModLister {
 
 		lines.add("\n");
 
-		for (Entry<String, List<ModContainer>> entry : customCategories
-				.entrySet()) {
-			lines.add("\n" + entry.getKey() + "\n=");
-			for (ModContainer mod : entry.getValue()) {
+		int priorityId = 1;
+		for (String priorityString : priorityList) {
+			String priority = priorityString.split(":")[0];
+			int priorityNum = Integer.parseInt(priorityString.split(":")[1]);
+			if (priorityNum != priorityId) {
+				priorityId++;
+			}
+			List<ModContainer> entries = customCategories.get(priority);
+
+			lines.add("\n" + priority + "\n=");
+			for (ModContainer mod : entries) {
 				lines.add(createLine(mod));
 			}
 			lines.add("\n");
@@ -138,8 +142,17 @@ public final class NinsModLister {
 	}
 
 	private boolean checkBlackList(ModContainer mod) {
-		return !blackList.contains(mod.getName())
-				&& !blackList.contains(mod.getModId());
+		boolean check = true;
+		String modName = mod.getName();
+		String modId = mod.getModId();
+		for (String blackListItem : blackList) {
+			if (modName.contains(blackListItem)
+					|| modId.contains(blackListItem)) {
+				check = false;
+				break;
+			}
+		}
+		return check;
 	}
 
 	private String createLine(ModContainer mod) {
@@ -148,8 +161,7 @@ public final class NinsModLister {
 		builder.append("- **");
 		builder.append(mod.getName());
 		builder.append("** ");
-		if (mod.getVersion().charAt(0) != 'v')
-			builder.append("v");
+		builder.append("v");
 		builder.append(mod.getVersion());
 
 		if (mod.getMetadata().getAuthorList() != null
