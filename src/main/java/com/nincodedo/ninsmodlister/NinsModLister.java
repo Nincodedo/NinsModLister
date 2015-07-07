@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import scala.actors.threadpool.Arrays;
 import net.minecraftforge.common.ForgeVersion;
 
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
@@ -38,7 +38,7 @@ public final class NinsModLister {
 
 	File mcDir;
 
-	List blackList;
+	List<String> blackList;
 	List<String> priorityList;
 
 	@Mod.EventHandler
@@ -80,9 +80,9 @@ public final class NinsModLister {
 					modIds = new ArrayList<ModContainer>();
 					customCategories.put(Settings.generalCategoryTitle, modIds);
 				}
-				if (!blackList.contains(mod.getName())
-						&& !blackList.contains(mod.getModId()))
+				if (checkBlackList(mod)) {
 					modIds.add(mod);
+				}
 			}
 		}
 
@@ -142,8 +142,17 @@ public final class NinsModLister {
 	}
 
 	private boolean checkBlackList(ModContainer mod) {
-		return !blackList.contains(mod.getName())
-				&& !blackList.contains(mod.getModId());
+		boolean check = true;
+		String modName = mod.getName();
+		String modId = mod.getModId();
+		for (String blackListItem : blackList) {
+			if (modName.contains(blackListItem)
+					|| modId.contains(blackListItem)) {
+				check = false;
+				break;
+			}
+		}
+		return check;
 	}
 
 	private String createLine(ModContainer mod) {
@@ -152,8 +161,7 @@ public final class NinsModLister {
 		builder.append("- **");
 		builder.append(mod.getName());
 		builder.append("** ");
-		if (mod.getVersion().charAt(0) != 'v')
-			builder.append("v");
+		builder.append("v");
 		builder.append(mod.getVersion());
 
 		if (mod.getMetadata().getAuthorList() != null
