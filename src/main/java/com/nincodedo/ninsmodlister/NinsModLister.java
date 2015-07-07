@@ -39,6 +39,7 @@ public final class NinsModLister {
 	File mcDir;
 
 	List blackList;
+	List<String> priorityList;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -54,6 +55,7 @@ public final class NinsModLister {
 		HashMap<String, List<ModContainer>> customCategories = new HashMap<String, List<ModContainer>>();
 		List<ModContainer> modIds = new ArrayList<ModContainer>();
 		blackList = Arrays.asList(Settings.configBlackList);
+		priorityList = Arrays.asList(Settings.categoryPriority);
 
 		for (ModContainer mod : Loader.instance().getModList()) {
 			found = false;
@@ -61,12 +63,10 @@ public final class NinsModLister {
 				String category = line.split(":")[0];
 				String modId = line.split(":")[1];
 				if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
-					if (!customCategories.containsKey(category)) {
+					modIds = customCategories.get(category);
+					if (modIds == null) {
 						modIds = new ArrayList<ModContainer>();
 						customCategories.put(category, modIds);
-					}
-					if (customCategories.containsKey(category)) {
-						modIds = customCategories.get(category);
 					}
 					if (checkBlackList(mod)) {
 						modIds.add(mod);
@@ -75,13 +75,10 @@ public final class NinsModLister {
 				}
 			}
 			if (!found) {
-				if (!customCategories
-						.containsKey(Settings.generalCategoryTitle)) {
+				modIds = customCategories.get(Settings.generalCategoryTitle);
+				if (modIds == null) {
 					modIds = new ArrayList<ModContainer>();
 					customCategories.put(Settings.generalCategoryTitle, modIds);
-				} else {
-					modIds = customCategories
-							.get(Settings.generalCategoryTitle);
 				}
 				if (!blackList.contains(mod.getName())
 						&& !blackList.contains(mod.getModId()))
@@ -104,10 +101,17 @@ public final class NinsModLister {
 
 		lines.add("\n");
 
-		for (Entry<String, List<ModContainer>> entry : customCategories
-				.entrySet()) {
-			lines.add("\n" + entry.getKey() + "\n=");
-			for (ModContainer mod : entry.getValue()) {
+		int priorityId = 1;
+		for (String priorityString : priorityList) {
+			String priority = priorityString.split(":")[0];
+			int priorityNum = Integer.parseInt(priorityString.split(":")[1]);
+			if (priorityNum != priorityId) {
+				priorityId++;
+			}
+			List<ModContainer> entries = customCategories.get(priority);
+
+			lines.add("\n" + priority + "\n=");
+			for (ModContainer mod : entries) {
 				lines.add(createLine(mod));
 			}
 			lines.add("\n");
