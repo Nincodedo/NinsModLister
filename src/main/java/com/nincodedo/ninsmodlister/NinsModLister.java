@@ -3,7 +3,6 @@ package com.nincodedo.ninsmodlister;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -11,10 +10,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.minecraftforge.common.ForgeVersion;
 
@@ -101,20 +100,15 @@ public final class NinsModLister {
 
 		lines.add("\n");
 
-		int priorityId = 1;
-		for (String priorityString : priorityList) {
-			String priority = priorityString.split(":")[0];
-			int priorityNum = Integer.parseInt(priorityString.split(":")[1]);
-			if (priorityNum != priorityId) {
-				priorityId++;
-			}
+		for (String priority : priorityList) {
 			List<ModContainer> entries = customCategories.get(priority);
-
-			lines.add("\n" + priority + "\n=");
-			for (ModContainer mod : entries) {
-				lines.add(createLine(mod));
+			if (entries != null) {
+				lines.add("\n" + priority + "\n=");
+				for (ModContainer mod : entries) {
+					lines.add(createLine(mod));
+				}
+				lines.add("\n");
 			}
-			lines.add("\n");
 		}
 
 		try {
@@ -142,15 +136,18 @@ public final class NinsModLister {
 	}
 
 	private boolean checkBlackList(ModContainer mod) {
+
 		boolean check = true;
-		String modName = mod.getName();
-		String modId = mod.getModId();
+		try{
 		for (String blackListItem : blackList) {
-			if (modName.contains(blackListItem)
-					|| modId.contains(blackListItem)) {
+			if (Pattern.matches(blackListItem, mod.getName())
+					|| Pattern.matches(blackListItem, mod.getModId())) {
 				check = false;
 				break;
 			}
+		}}
+		catch(PatternSyntaxException e){
+			LogHelper.error(e);
 		}
 		return check;
 	}
@@ -161,7 +158,9 @@ public final class NinsModLister {
 		builder.append("- **");
 		builder.append(mod.getName());
 		builder.append("** ");
-		builder.append("v");
+		if (mod.getVersion().length() > 0 && mod.getVersion().charAt(0) != 'v'
+				&& mod.getVersion().charAt(0) != 'r')
+			builder.append("v");
 		builder.append(mod.getVersion());
 
 		if (mod.getMetadata().getAuthorList() != null
