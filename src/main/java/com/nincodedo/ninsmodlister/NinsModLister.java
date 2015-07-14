@@ -101,20 +101,15 @@ public final class NinsModLister {
 
 		lines.add("\n");
 
-		int priorityId = 1;
-		for (String priorityString : priorityList) {
-			String priority = priorityString.split(":")[0];
-			int priorityNum = Integer.parseInt(priorityString.split(":")[1]);
-			if (priorityNum != priorityId) {
-				priorityId++;
-			}
+		for (String priority : priorityList) {
 			List<ModContainer> entries = customCategories.get(priority);
-
-			lines.add("\n" + priority + "\n=");
-			for (ModContainer mod : entries) {
-				lines.add(createLine(mod));
+			if (entries != null) {
+				lines.add("\n" + priority + "\n=");
+				for (ModContainer mod : entries) {
+					lines.add(createLine(mod));
+				}
+				lines.add("\n");
 			}
-			lines.add("\n");
 		}
 
 		try {

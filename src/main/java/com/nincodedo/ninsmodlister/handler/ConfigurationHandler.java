@@ -37,7 +37,7 @@ public class ConfigurationHandler {
 								+ "Things:NinsModLister");
 		Settings.categoryPriority = configuration.getStringList(
 				"categoryPriority", category,
-				new String[] { "Current Mod Versions:1" }, "");
+				new String[] { "Current Mod Versions" }, "");
 		Settings.generalCategoryTitle = configuration
 				.getString("generalCategoryTitle", category,
 						"Current Mod Versions",
