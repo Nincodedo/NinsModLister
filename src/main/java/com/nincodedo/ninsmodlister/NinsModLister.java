@@ -161,7 +161,9 @@ public final class NinsModLister {
 		builder.append("- **");
 		builder.append(mod.getName());
 		builder.append("** ");
-		builder.append("v");
+		if (mod.getVersion().length() > 0 && mod.getVersion().charAt(0) != 'v'
+				&& mod.getVersion().charAt(0) != 'r')
+			builder.append("v");
 		builder.append(mod.getVersion());
 
 		if (mod.getMetadata().getAuthorList() != null
