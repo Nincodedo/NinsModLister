@@ -3,7 +3,6 @@ package com.nincodedo.ninsmodlister;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -11,10 +10,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.minecraftforge.common.ForgeVersion;
 
@@ -137,15 +136,18 @@ public final class NinsModLister {
 	}
 
 	private boolean checkBlackList(ModContainer mod) {
+
 		boolean check = true;
-		String modName = mod.getName();
-		String modId = mod.getModId();
+		try{
 		for (String blackListItem : blackList) {
-			if (modName.contains(blackListItem)
-					|| modId.contains(blackListItem)) {
+			if (Pattern.matches(blackListItem, mod.getName())
+					|| Pattern.matches(blackListItem, mod.getModId())) {
 				check = false;
 				break;
 			}
+		}}
+		catch(PatternSyntaxException e){
+			LogHelper.error(e);
 		}
 		return check;
 	}
