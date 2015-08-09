@@ -10,4 +10,6 @@ public class Settings {
 	public static String fileName;
 
 	public static String[] categoryPriority;
+
+	public static boolean showForgeVersion;
 }

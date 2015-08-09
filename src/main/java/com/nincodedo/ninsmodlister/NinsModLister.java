@@ -88,13 +88,11 @@ public final class NinsModLister {
 		Comparator<ModContainer> compareMods = new Comparator<ModContainer>() {
 			@Override
 			public int compare(ModContainer mod1, ModContainer mod2) {
-				return mod1.getName().toLowerCase()
-						.compareTo(mod2.getName().toLowerCase());
+				return mod1.getName().toLowerCase().compareTo(mod2.getName().toLowerCase());
 			}
 		};
 
-		for (Entry<String, List<ModContainer>> entry : customCategories
-				.entrySet()) {
+		for (Entry<String, List<ModContainer>> entry : customCategories.entrySet()) {
 			Collections.sort(entry.getValue(), compareMods);
 		}
 
@@ -113,12 +111,13 @@ public final class NinsModLister {
 
 		try {
 			File file = new File(mcDir, Settings.fileName);
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(file), "UTF-8"));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 
-			writer.write("Current Forge Version\n=\n");
+			if (Settings.showForgeVersion) {
+				writer.write("Current Forge Version\n=\n");
 
-			writer.write("- **Forge** v" + ForgeVersion.getVersion());
+				writer.write("- **Forge** v" + ForgeVersion.getVersion());
+			}
 
 			for (String s : lines)
 				writer.write(s);
@@ -138,15 +137,14 @@ public final class NinsModLister {
 	private boolean checkBlackList(ModContainer mod) {
 
 		boolean check = true;
-		try{
-		for (String blackListItem : blackList) {
-			if (Pattern.matches(blackListItem, mod.getName())
-					|| Pattern.matches(blackListItem, mod.getModId())) {
-				check = false;
-				break;
+		try {
+			for (String blackListItem : blackList) {
+				if (Pattern.matches(blackListItem, mod.getName()) || Pattern.matches(blackListItem, mod.getModId())) {
+					check = false;
+					break;
+				}
 			}
-		}}
-		catch(PatternSyntaxException e){
+		} catch (PatternSyntaxException e) {
 			LogHelper.error(e);
 		}
 		return check;
@@ -158,13 +156,11 @@ public final class NinsModLister {
 		builder.append("- **");
 		builder.append(mod.getName());
 		builder.append("** ");
-		if (mod.getVersion().length() > 0 && mod.getVersion().charAt(0) != 'v'
-				&& mod.getVersion().charAt(0) != 'r')
+		if (mod.getVersion().length() > 0 && mod.getVersion().charAt(0) != 'v' && mod.getVersion().charAt(0) != 'r')
 			builder.append("v");
 		builder.append(mod.getVersion());
 
-		if (mod.getMetadata().getAuthorList() != null
-				&& mod.getMetadata().getAuthorList().length() > 0) {
+		if (mod.getMetadata().getAuthorList() != null && mod.getMetadata().getAuthorList().length() > 0) {
 			builder.append(" by ");
 			builder.append(mod.getMetadata().getAuthorList());
 		}
