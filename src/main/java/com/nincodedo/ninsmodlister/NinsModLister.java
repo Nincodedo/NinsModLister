@@ -39,6 +39,7 @@ public final class NinsModLister {
 
 	List<String> blackList;
 	List<String> priorityList;
+	List<String> overrides;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -55,6 +56,7 @@ public final class NinsModLister {
 		List<ModContainer> modIds = new ArrayList<ModContainer>();
 		blackList = Arrays.asList(Settings.configBlackList);
 		priorityList = Arrays.asList(Settings.categoryPriority);
+		overrides = Arrays.asList(Settings.overrides);
 
 		for (ModContainer mod : Loader.instance().getModList()) {
 			found = false;
@@ -136,18 +138,16 @@ public final class NinsModLister {
 
 	private boolean checkBlackList(ModContainer mod) {
 
-		boolean check = true;
 		try {
 			for (String blackListItem : blackList) {
 				if (Pattern.matches(blackListItem, mod.getName()) || Pattern.matches(blackListItem, mod.getModId())) {
-					check = false;
-					break;
+					return true;
 				}
 			}
 		} catch (PatternSyntaxException e) {
 			LogHelper.error(e);
 		}
-		return check;
+		return true;
 	}
 
 	private String createLine(ModContainer mod) {

@@ -11,5 +11,7 @@ public class Settings {
 
 	public static String[] categoryPriority;
 
+	public static String[] overrides;
+
 	public static boolean showForgeVersion;
 }
