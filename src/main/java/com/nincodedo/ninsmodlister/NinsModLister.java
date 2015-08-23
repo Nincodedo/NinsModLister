@@ -167,7 +167,7 @@ public final class NinsModLister {
 		try {
 			for (String blackListItem : blackList) {
 				if (Pattern.matches(blackListItem, mod.getName()) || Pattern.matches(blackListItem, mod.getModId())) {
-					return true;
+					return false;
 				}
 			}
 		} catch (PatternSyntaxException e) {
