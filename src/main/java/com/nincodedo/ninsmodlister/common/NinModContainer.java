@@ -9,7 +9,7 @@ public class NinModContainer extends InjectedModContainer {
 	private String name;
 	private String authorList;
 	private String version;
-	
+
 	public NinModContainer(ModContainer fmod) {
 		super(fmod, null);
 		this.modId = fmod.getModId();
@@ -18,6 +18,7 @@ public class NinModContainer extends InjectedModContainer {
 		this.version = fmod.getVersion();
 	}
 
+	@Override
 	public String getModId() {
 		return modId;
 	}
@@ -26,6 +27,7 @@ public class NinModContainer extends InjectedModContainer {
 		this.modId = modId;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -42,6 +44,7 @@ public class NinModContainer extends InjectedModContainer {
 		this.authorList = authorList;
 	}
 
+	@Override
 	public String getVersion() {
 		return version;
 	}

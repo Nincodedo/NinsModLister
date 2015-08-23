@@ -15,8 +15,6 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import net.minecraftforge.common.ForgeVersion;
-
 import com.nincodedo.ninsmodlister.common.NinModContainer;
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
 import com.nincodedo.ninsmodlister.reference.OverrideType;
@@ -30,6 +28,7 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.common.ForgeVersion;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, dependencies = Reference.DEPENDENCIES)
 public final class NinsModLister {
