@@ -15,9 +15,9 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import net.minecraftforge.common.ForgeVersion;
-
+import com.nincodedo.ninsmodlister.common.NinModContainer;
 import com.nincodedo.ninsmodlister.handler.ConfigurationHandler;
+import com.nincodedo.ninsmodlister.reference.OverrideType;
 import com.nincodedo.ninsmodlister.reference.Reference;
 import com.nincodedo.ninsmodlister.reference.Settings;
 import com.nincodedo.ninsmodlister.utility.LogHelper;
@@ -28,6 +28,7 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.common.ForgeVersion;
 
 @Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, dependencies = Reference.DEPENDENCIES)
 public final class NinsModLister {
@@ -39,6 +40,7 @@ public final class NinsModLister {
 
 	List<String> blackList;
 	List<String> priorityList;
+	List<String> overrides;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -51,36 +53,36 @@ public final class NinsModLister {
 	public void postInit(FMLPostInitializationEvent event) {
 		List<String> lines = new ArrayList();
 		boolean found = false;
-		HashMap<String, List<ModContainer>> customCategories = new HashMap<String, List<ModContainer>>();
-		List<ModContainer> modIds = new ArrayList<ModContainer>();
+		HashMap<String, List<NinModContainer>> customCategories = new HashMap<String, List<NinModContainer>>();
+		List<NinModContainer> modIds = new ArrayList<NinModContainer>();
 		blackList = Arrays.asList(Settings.configBlackList);
 		priorityList = Arrays.asList(Settings.categoryPriority);
+		overrides = Arrays.asList(Settings.overrides);
 
-		for (ModContainer mod : Loader.instance().getModList()) {
-			found = false;
-			for (String line : Settings.categoryGroups) {
-				String category = line.split(":")[0];
-				String modId = line.split(":")[1];
-				if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
-					modIds = customCategories.get(category);
+		for (ModContainer fmod : Loader.instance().getModList()) {
+			NinModContainer mod = new NinModContainer(fmod);
+			if (checkBlackList(mod)) {
+				found = false;
+				for (String line : Settings.categoryGroups) {
+					String category = line.split(":")[0];
+					String modId = line.split(":")[1];
+					if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
+						modIds = customCategories.get(category);
+						if (modIds == null) {
+							modIds = new ArrayList<NinModContainer>();
+							customCategories.put(category, modIds);
+						}
+						modIds.add(processOverrides(mod));
+						found = true;
+					}
+				}
+				if (!found) {
+					modIds = customCategories.get(Settings.generalCategoryTitle);
 					if (modIds == null) {
-						modIds = new ArrayList<ModContainer>();
-						customCategories.put(category, modIds);
+						modIds = new ArrayList<NinModContainer>();
+						customCategories.put(Settings.generalCategoryTitle, modIds);
 					}
-					if (checkBlackList(mod)) {
-						modIds.add(mod);
-					}
-					found = true;
-				}
-			}
-			if (!found) {
-				modIds = customCategories.get(Settings.generalCategoryTitle);
-				if (modIds == null) {
-					modIds = new ArrayList<ModContainer>();
-					customCategories.put(Settings.generalCategoryTitle, modIds);
-				}
-				if (checkBlackList(mod)) {
-					modIds.add(mod);
+					modIds.add(processOverrides(mod));
 				}
 			}
 		}
@@ -88,23 +90,21 @@ public final class NinsModLister {
 		Comparator<ModContainer> compareMods = new Comparator<ModContainer>() {
 			@Override
 			public int compare(ModContainer mod1, ModContainer mod2) {
-				return mod1.getName().toLowerCase()
-						.compareTo(mod2.getName().toLowerCase());
+				return mod1.getName().toLowerCase().compareTo(mod2.getName().toLowerCase());
 			}
 		};
 
-		for (Entry<String, List<ModContainer>> entry : customCategories
-				.entrySet()) {
+		for (Entry<String, List<NinModContainer>> entry : customCategories.entrySet()) {
 			Collections.sort(entry.getValue(), compareMods);
 		}
 
 		lines.add("\n");
 
 		for (String priority : priorityList) {
-			List<ModContainer> entries = customCategories.get(priority);
+			List<NinModContainer> entries = customCategories.get(priority);
 			if (entries != null) {
 				lines.add("\n" + priority + "\n=");
-				for (ModContainer mod : entries) {
+				for (NinModContainer mod : entries) {
 					lines.add(createLine(mod));
 				}
 				lines.add("\n");
@@ -113,12 +113,13 @@ public final class NinsModLister {
 
 		try {
 			File file = new File(mcDir, Settings.fileName);
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(file), "UTF-8"));
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 
-			writer.write("Current Forge Version\n=\n");
+			if (Settings.showForgeVersion) {
+				writer.write("Current Forge Version\n=\n");
 
-			writer.write("- **Forge** v" + ForgeVersion.getVersion());
+				writer.write("- **Forge** v" + ForgeVersion.getVersion());
+			}
 
 			for (String s : lines)
 				writer.write(s);
@@ -135,38 +136,59 @@ public final class NinsModLister {
 		}
 	}
 
-	private boolean checkBlackList(ModContainer mod) {
+	private NinModContainer processOverrides(NinModContainer mod) {
+		String[] overrideList;
+		for (String overrideLine : overrides) {
+			overrideList = overrideLine.split(":");
+			String modId = overrideList[0];
+			if (modId.equals(mod.getModId())) {
+				String overrideType = overrideList[1];
+				String override = overrideList[2];
 
-		boolean check = true;
-		try{
-		for (String blackListItem : blackList) {
-			if (Pattern.matches(blackListItem, mod.getName())
-					|| Pattern.matches(blackListItem, mod.getModId())) {
-				check = false;
-				break;
+				switch (overrideType) {
+				case OverrideType.NAME:
+					mod.setName(override);
+					break;
+				case OverrideType.VERSION:
+					mod.setVersion(override);
+					break;
+				case OverrideType.AUTHORLIST:
+					mod.setAuthorList(override);
+				default:
+					break;
+				}
 			}
-		}}
-		catch(PatternSyntaxException e){
-			LogHelper.error(e);
 		}
-		return check;
+		return mod;
 	}
 
-	private String createLine(ModContainer mod) {
+	private boolean checkBlackList(NinModContainer mod) {
+
+		try {
+			for (String blackListItem : blackList) {
+				if (Pattern.matches(blackListItem, mod.getName()) || Pattern.matches(blackListItem, mod.getModId())) {
+					return true;
+				}
+			}
+		} catch (PatternSyntaxException e) {
+			LogHelper.error(e);
+		}
+		return true;
+	}
+
+	private String createLine(NinModContainer mod) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("\n");
 		builder.append("- **");
 		builder.append(mod.getName());
 		builder.append("** ");
-		if (mod.getVersion().length() > 0 && mod.getVersion().charAt(0) != 'v'
-				&& mod.getVersion().charAt(0) != 'r')
+		if (mod.getVersion().length() > 0 && mod.getVersion().charAt(0) != 'v' && mod.getVersion().charAt(0) != 'r')
 			builder.append("v");
 		builder.append(mod.getVersion());
 
-		if (mod.getMetadata().getAuthorList() != null
-				&& mod.getMetadata().getAuthorList().length() > 0) {
+		if (mod.getMetadata().getAuthorList() != null && mod.getMetadata().getAuthorList().length() > 0) {
 			builder.append(" by ");
-			builder.append(mod.getMetadata().getAuthorList());
+			builder.append(mod.getAuthorList());
 		}
 
 		return builder.toString();

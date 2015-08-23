@@ -30,6 +30,9 @@ version = config.mod_version
 group= "com.nincodedo.ninsmodlister" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "NinsModLister"
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 minecraft {
     version = config.minecraft_version + "-" + config.forge_version
     
