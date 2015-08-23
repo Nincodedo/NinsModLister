@@ -1,12 +1,8 @@
 package com.nincodedo.ninsmodlister.utility;
 
-
 import org.apache.logging.log4j.Level;
 
-
-
 import cpw.mods.fml.common.FMLLog;
-import cpw.mods.fml.common.Mod.Instance;
 
 public class LogHelper {
 
