@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -67,32 +68,23 @@ public final class NinsModLister {
 					String category = line.split(":")[0];
 					String modId = line.split(":")[1];
 					if (mod.getModId().equals(modId) || mod.getName().equals(modId)) {
-						modIds = customCategories.get(category);
-						if (modIds == null) {
-							modIds = new ArrayList<NinModContainer>();
-							customCategories.put(category, modIds);
-						}
+						modIds = customCategories.getOrDefault(category, new ArrayList<NinModContainer>());
+						customCategories.put(category, modIds);
 						modIds.add(processOverrides(mod));
 						found = true;
 					}
 				}
 				if (!found) {
-					modIds = customCategories.get(Settings.generalCategoryTitle);
-					if (modIds == null) {
-						modIds = new ArrayList<NinModContainer>();
-						customCategories.put(Settings.generalCategoryTitle, modIds);
-					}
+					modIds = customCategories.getOrDefault(Settings.generalCategoryTitle,
+							new ArrayList<NinModContainer>());
+					customCategories.put(Settings.generalCategoryTitle, modIds);
 					modIds.add(processOverrides(mod));
 				}
 			}
 		}
 
-		Comparator<ModContainer> compareMods = new Comparator<ModContainer>() {
-			@Override
-			public int compare(ModContainer mod1, ModContainer mod2) {
-				return mod1.getName().toLowerCase().compareTo(mod2.getName().toLowerCase());
-			}
-		};
+		Comparator<NinModContainer> compareMods = (m1, m2) -> m1.getName().toLowerCase()
+				.compareTo(m2.getName().toLowerCase());
 
 		for (Entry<String, List<NinModContainer>> entry : customCategories.entrySet()) {
 			Collections.sort(entry.getValue(), compareMods);
@@ -101,10 +93,11 @@ public final class NinsModLister {
 		lines.add("\n");
 
 		for (String priority : priorityList) {
-			List<NinModContainer> entries = customCategories.get(priority);
-			if (entries != null) {
+			Optional<List<NinModContainer>> entries = Optional.ofNullable(customCategories.get(priority));
+
+			if (entries.isPresent()) {
 				lines.add("\n" + priority + "\n=");
-				for (NinModContainer mod : entries) {
+				for (NinModContainer mod : entries.get()) {
 					lines.add(createLine(mod));
 				}
 				lines.add("\n");
@@ -154,6 +147,7 @@ public final class NinsModLister {
 					break;
 				case OverrideType.AUTHORLIST:
 					mod.setAuthorList(override);
+					break;
 				default:
 					break;
 				}
@@ -163,7 +157,6 @@ public final class NinsModLister {
 	}
 
 	private boolean checkBlackList(NinModContainer mod) {
-
 		try {
 			for (String blackListItem : blackList) {
 				if (Pattern.matches(blackListItem, mod.getName()) || Pattern.matches(blackListItem, mod.getModId())) {
