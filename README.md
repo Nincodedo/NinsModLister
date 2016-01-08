@@ -1,5 +1,5 @@
 # Nin's Mod Lister [![Build Status](http://play.nincraft.com:8080/buildStatus/icon?job=Nins Mod Lister)](http://play.nincraft.com:8080/job/Nins Mod Lister)
-A Minecraft 1.7.10 Forge mod that lists the mods in your pack. It is also configurable so you can hide and categorize mods.
+A Minecraft Forge mod that lists the mods in your pack. It is also configurable so you can hide and categorize mods.
 #Configurations
 ## Blacklist
 The blacklist is a list of mods or mod IDs that you don't want to show up anywhere in your mod list. The list can be full names or partial matches.
