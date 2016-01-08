@@ -5,9 +5,9 @@ import java.io.File;
 import com.nincodedo.ninsmodlister.reference.Reference;
 import com.nincodedo.ninsmodlister.reference.Settings;
 
-import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class ConfigurationHandler {
 	public static Configuration configuration;

@@ -1,7 +1,7 @@
 package com.nincodedo.ninsmodlister.common;
 
-import cpw.mods.fml.common.InjectedModContainer;
-import cpw.mods.fml.common.ModContainer;
+import net.minecraftforge.fml.common.InjectedModContainer;
+import net.minecraftforge.fml.common.ModContainer;
 
 public class NinModContainer extends InjectedModContainer {
 
