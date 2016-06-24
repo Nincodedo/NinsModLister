@@ -13,3 +13,5 @@
 /.project
 /bin
 /libs
+*.launch
+.idea/
